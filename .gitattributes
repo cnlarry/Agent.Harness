@@ -1,0 +1,11 @@
+# 统一用 LF：本仓主要在 Windows 上开发，但开源后会有 Linux / macOS 贡献者与 CI，
+# 不统一行尾会让每个提交都夹带整文件的 CRLF/LF 变更。
+* text=auto eol=lf
+
+# 二进制/生成物按原样存
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.zip binary
+*.nupkg binary

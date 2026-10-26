@@ -1,0 +1,32 @@
+# Build
+bin/
+obj/
+artifacts/
+TestResults/
+*.nupkg
+*.snupkg
+*.user
+*.suo
+*.cache
+
+# IDE
+.vs/
+.idea/
+.vscode/
+*.swp
+
+# Local configuration / secrets
+.env
+.env.*
+*.local.json
+secrets.json
+*.pfx
+*.pem
+*.key
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local agent scratch
+.agent/

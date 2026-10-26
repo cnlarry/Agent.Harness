@@ -1,0 +1,32 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- 目标框架集中在这里；测试/示例项目可单独覆盖为 net10.0。 -->
+    <HarnessTargetFrameworks Condition="'$(HarnessTargetFrameworks)' == ''">net8.0;net10.0</HarnessTargetFrameworks>
+
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Deterministic>true</Deterministic>
+
+    <!-- 骨架期先不强制 XML 注释；公开 API 稳定后删除本行。 -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <RootNamespace>$(MSBuildProjectName)</RootNamespace>
+    <AssemblyName>$(MSBuildProjectName)</AssemblyName>
+    <IsPackable Condition="'$(IsPackable)' == ''">true</IsPackable>
+    <Version>0.1.0</Version>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 每个 NuGet 包都带上仓库 README，避免 pack 时缺自述文件。 -->
+    <None Include="$(MSBuildThisFileDirectory)README.md"
+          Pack="true"
+          PackagePath="\"
+          Visible="false" />
+  </ItemGroup>
+
+</Project>

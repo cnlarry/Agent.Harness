@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(HarnessTargetFrameworks)</TargetFrameworks>
+    <RootNamespace>Agent.Harness.Abstractions</RootNamespace>
+    <PackageId>Agent.Harness.Abstractions</PackageId>
+    <Description>Agent Harness 的稳定契约：回合、事件、工具、治理与会话。不依赖任何 Agent 框架。</Description>
+  </PropertyGroup>
+
+</Project>

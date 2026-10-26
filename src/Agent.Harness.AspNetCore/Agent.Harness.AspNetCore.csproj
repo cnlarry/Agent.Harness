@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(HarnessTargetFrameworks)</TargetFrameworks>
+    <RootNamespace>Agent.Harness.AspNetCore</RootNamespace>
+    <PackageId>Agent.Harness.AspNetCore</PackageId>
+    <Description>Agent Harness 的 ASP.NET Core SSE 端点与宿主接线。</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Agent.Harness.Abstractions\Agent.Harness.Abstractions.csproj" />
+    <ProjectReference Include="..\Agent.Harness.Core\Agent.Harness.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+</Project>

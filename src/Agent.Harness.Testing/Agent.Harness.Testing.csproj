@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(HarnessTargetFrameworks)</TargetFrameworks>
+    <RootNamespace>Agent.Harness.Testing</RootNamespace>
+    <PackageId>Agent.Harness.Testing</PackageId>
+    <Description>Agent Harness 的测试替身与回放：FakeChatModel、内存预算/审计、回显引擎、IChatModel 录制/回放。</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Agent.Harness.Abstractions\Agent.Harness.Abstractions.csproj" />
+    <ProjectReference Include="..\Agent.Harness.Core\Agent.Harness.Core.csproj" />
+  </ItemGroup>
+
+</Project>

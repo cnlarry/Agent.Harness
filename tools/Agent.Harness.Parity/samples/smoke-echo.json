@@ -1,0 +1,46 @@
+{
+  "name": "smoke-echo",
+  "modelName": "smoke-model",
+  "systemPrompt": "你是回声助手。",
+  "userInput": "你好",
+  "maxToolRounds": 2,
+  "note": "工具自检用的合成用例（虚构 echo 工具），与任何宿主仓的用例无关。只验证 run 子命令能跑通、能写出结果。",
+  "tools": [
+    {
+      "name": "echo",
+      "description": "[READ] 原样返回输入",
+      "parametersJson": "{\"type\":\"object\",\"properties\":{\"text\":{\"type\":\"string\"}},\"required\":[\"text\"]}",
+      "risk": "read",
+      "readOnly": true,
+      "resultContent": "echo: 你好",
+      "ok": true
+    }
+  ],
+  "calls": [
+    {
+      "output": [
+        {
+          "toolCallDeltas": [
+            {
+              "index": 0,
+              "id": "call-echo",
+              "name": "echo",
+              "argumentsFragment": "{\"text\":\"你好\"}"
+            }
+          ],
+          "finishReason": "tool_calls"
+        }
+      ]
+    },
+    {
+      "output": [
+        {
+          "contentDelta": "echo: 你好"
+        },
+        {
+          "finishReason": "stop"
+        }
+      ]
+    }
+  ]
+}
