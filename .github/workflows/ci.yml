@@ -1,0 +1,38 @@
+# 开源协作门禁：编译 / 离线测试 / 打包。
+#
+# 本库是纯 .NET，测试既不连模型也不连数据库（真实模型验证只在 spikes/ 手动跑），
+# 所以整条流水线跑在 ubuntu-latest。库的目标框架是 net8.0;net10.0，
+# net8.0 的引用包由 SDK 还原，不需要额外安装旧 SDK。
+#
+# 打包这一步是刻意的：五个库都可打包（Directory.Build.props 里 IsPackable 默认为真），
+# 而"能编译能测试、但打不出包"（缺 Description、README 没随包）只会在发版时暴露。
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: 编译 / 测试 / 打包
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+      # 仓库开了 TreatWarningsAsErrors，所以这一步同时是"零警告"门禁。
+      - name: 编译
+        run: dotnet build Agent.Harness.slnx -c Release
+      - name: 单元测试
+        run: dotnet test tests/Agent.Harness.Tests/Agent.Harness.Tests.csproj -c Release --no-build
+      - name: 打包
+        run: dotnet pack Agent.Harness.slnx -c Release --no-build -o artifacts/packages
