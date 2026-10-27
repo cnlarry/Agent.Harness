@@ -19,6 +19,16 @@ public sealed class MafAgentEngineOptions
     public bool AllowConcurrentToolInvocation { get; set; }
 
     /// <summary>
+    /// 模型请求调用未声明的工具时，是否立即结束循环。
+    ///
+    /// <para>
+    /// false（默认）与 MAF 自身默认一致：生成一条"工具不存在"的结果回喂模型，让它改用已声明的工具；
+    /// true 则直接以模型这一轮的输出收尾。宿主若把"未知工具"视为协议错误而不是模型跑偏，可打开它。
+    /// </para>
+    /// </summary>
+    public bool TerminateOnUnknownCalls { get; set; }
+
+    /// <summary>
     /// 空正文、无工具调用、正常结束时的最大重试次数。默认 1；0 表示不重试。
     /// </summary>
     public int MaxEmptyResponseRetries { get; set; } = 1;

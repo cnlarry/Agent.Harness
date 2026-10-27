@@ -17,6 +17,17 @@ namespace Agent.Harness.Maf;
 /// </summary>
 public sealed class ChatModelChatClient(IChatModel model) : IChatClient
 {
+    /// <summary>
+    /// 模型给出的工具参数不是合法 JSON 时，原始文本在参数对象里的保留键。
+    ///
+    /// <para>
+    /// 解析失败不能在这里抛：那会把"一次调用格式错"升级成整轮失败，模型连改正的机会都没有。
+    /// 也不能悄悄改成空参数——那会变成一条看似正常的调用，工具只能报"缺参数"，真实原因丢失。
+    /// 用一个不可能与业务参数重名的键把原文带到工具层，由宿主决定怎么拒绝、记什么摘要。
+    /// </para>
+    /// </summary>
+    public const string InvalidArgumentsKey = "$harness.invalid_arguments";
+
     public Task<ChatResponse> GetResponseAsync(
         IEnumerable<MeaiChatMessage> messages,
         ChatOptions? options = null,
@@ -277,18 +288,29 @@ public sealed class ChatModelChatClient(IChatModel model) : IChatClient
 
         public IDictionary<string, object?> ParseArguments()
         {
-            if (_arguments.Length == 0)
+            var raw = _arguments.ToString();
+            if (raw.Length == 0)
             {
                 return new Dictionary<string, object?>(StringComparer.Ordinal);
             }
 
-            using var document = JsonDocument.Parse(_arguments.ToString());
-            return document.RootElement
-                .EnumerateObject()
-                .ToDictionary(
-                    property => property.Name,
-                    property => (object?)property.Value.Clone(),
-                    StringComparer.Ordinal);
+            try
+            {
+                using var document = JsonDocument.Parse(raw);
+                return document.RootElement
+                    .EnumerateObject()
+                    .ToDictionary(
+                        property => property.Name,
+                        property => (object?)property.Value.Clone(),
+                        StringComparer.Ordinal);
+            }
+            catch (JsonException)
+            {
+                return new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    [ChatModelChatClient.InvalidArgumentsKey] = raw,
+                };
+            }
         }
     }
 }

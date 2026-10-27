@@ -29,12 +29,24 @@ public sealed record ToolInvocation(
     JsonElement Arguments,
     AgentPageContext? PageContext = null);
 
-/// <summary>工具执行结果。失败以 <see cref="Ok"/>=false 回喂模型，不向对话流抛业务异常。</summary>
-public sealed record ToolResult(bool Ok, string ContentForModel, object? Draft = null)
+/// <summary>
+/// 工具执行结果。失败以 <see cref="Ok"/>=false 回喂模型，不向对话流抛业务异常。
+///
+/// <para>
+/// <see cref="Digest"/> 为落库与界面展示用的摘要，为空时引擎按 <see cref="ContentForModel"/> 截断生成。
+/// 宿主若有稳定的摘要口径（如 <c>error:invalid_arguments</c> 这类可检索的标记），应显式给出：
+/// 回喂模型的正文与给人看的摘要本来就是两件事。
+/// </para>
+/// </summary>
+public sealed record ToolResult(
+    bool Ok,
+    string ContentForModel,
+    object? Draft = null,
+    string? Digest = null)
 {
     public static ToolResult Success(string content) => new(true, content);
 
-    public static ToolResult Deny(string reason) => new(false, reason);
+    public static ToolResult Deny(string reason, string? digest = null) => new(false, reason, Digest: digest);
 }
 
 /// <summary>落库/展示用的工具调用摘要。</summary>

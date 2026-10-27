@@ -50,7 +50,7 @@ public sealed class MafAgentEngine(
             MaximumIterationsPerRequest = request.MaxToolRounds,
             AllowConcurrentInvocation = _options.AllowConcurrentToolInvocation,
             MaximumConsecutiveErrorsPerRequest = 2,
-            TerminateOnUnknownCalls = true,
+            TerminateOnUnknownCalls = _options.TerminateOnUnknownCalls,
             IncludeDetailedErrors = false,
         };
 
@@ -126,6 +126,8 @@ public sealed class MafAgentEngine(
                         {
                             // ToolResult.Ok=false（策略拒绝/工具失败）不能因为异常为空就当成成功。
                             ok = toolResult.Ok && result.Exception is null;
+                            // 宿主给了摘要就用它：正文是给模型的，摘要才是给人看的（含可检索的失败标记）。
+                            digest = toolResult.Digest ?? digest;
                             if (toolResult.Draft is not null)
                             {
                                 drafts.Add(toolResult.Draft);
