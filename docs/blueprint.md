@@ -5,7 +5,7 @@
 > 版本：v1（2026-10-23）
 > 范围：EOS 工作助手现状复盘 + Microsoft Agent Framework（下称 MAF）全面使用可行性 + 面向多个企业管理系统复用的 Agent Harness 蓝图
 > 状态：设计蓝图，随 Agent Harness 仓库跟踪（2026-10-23 自 EOS 本机文档迁入）
-> 实现状态（2026-10-23）：0.1.0 骨架已落，`dotnet build` 0 警告 0 错误，`dotnet test` 101/101；P0 spike 10/10（`deepseek-flash`），但未做 EOS parity/灰度。
+> 实现状态（2026-10-27）：0.1.0 骨架已落，`dotnet build` 0 警告 0 错误，`dotnet test` 106/106；P0 spike 10/10（`deepseek-flash`）。**EOS 已把 `MafAgentEngine` 作为唯一引擎接入**（权限、写管线、预算、审计仍在宿主侧），跨引擎 parity 对拍已随旧引擎退役。下文涉及 parity 与灰度的段落是当时的计划记录，现状以上述为准。
 > 结论先行：**当时没选 MAF，不是评估后否决，而是它根本没进入候选名单；今天"全面使用"在技术上可行，但不建议把 EOS 助手整体重写。推荐"MAF 做引擎、Agent Harness 做治理壳、EOS 做第一个宿主"的分层路线。**
 
 ---

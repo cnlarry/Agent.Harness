@@ -23,9 +23,6 @@ dotnet test tests\Agent.Harness.Tests\Agent.Harness.Tests.csproj
 dotnet run --project samples\Agent.Harness.Sample.Console\Agent.Harness.Sample.Console.csproj
 ```
 
-跨引擎 parity（对比工具，不是门禁）：`dotnet run --project tools\Agent.Harness.Parity -- run|compare`，
-跑法与判定口径见 [tools/Agent.Harness.Parity/README.md](tools/Agent.Harness.Parity/README.md)。
-
 - 目标框架：库 `net8.0;net10.0`；测试/示例 `net10.0`。
 - `TreatWarningsAsErrors=true`；新增警告必须修掉，不要用 `NoWarn` 掩盖（`CS1591` 是骨架期临时豁免，稳定后移除）。
 - 不要启动长驻服务；验证用 `dotnet test` 或短命 console sample。
@@ -58,10 +55,10 @@ dotnet run --project samples\Agent.Harness.Sample.Console\Agent.Harness.Sample.C
 
 ## 6. 当前阶段
 
-- 已完成：契约、`ToolRegistry`、`TurnPipeline`、MAF 适配骨架、SSE 端点、测试替身、console sample；P0 spike（MAF 1.25 + `deepseek-flash` + 3 工具）10/10；失败事件、`max_tool_rounds`、Claims 身份组装与 `TurnPipeline` 接线；`IChatModel` 录制/回放 harness + 50 条构造 transcript 回放；工具 Schema 逐字快照与越权/泄露用例；SSE 失败端到端与适配器 reasoning/usage/取消/异常契约；`IConversationStore.IsOwnedByAsync` 会话归属校验与 403；`MafAgentEngineOptions` 只读 allowlist、DI 默认只读、并发默认 false、IConfiguration 绑定、空正文重试；P2 100 次真实基线（文本 p50 749 / 工具 1717 ms，整体 p95 2081 ms）；**跨引擎 parity 工具**（`tools/Agent.Harness.Parity`：归一化结果比对、三档判定）与 EOS 旧引擎侧回放（合成 2 条 + 从库内真实会话重建 10 条，全 PASS）；顺带修掉 `ChatModelChatClient` 丢弃 `ChatOptions.Instructions` 的缺陷，并补上收尾轮说明（`MafAgentEngineOptions.FinalRoundInstruction`）；`build` 0 警告 0 错误，`test` 118/118。
-- 未完成：**进程内流式录制**（分片、轮次边界、系统提示词快照——现在靠库内会话重建，这三样拿不到）、读路径灰度、写路径、抽包、工作流。
-- 50 条回放是构造场景，不是 EOS 真机录制；P0 是独立 spike，不替代 EOS parity。`MafAgentEngine` 仍未达到生产可用的 parity/灰度证据。
-- **不要**在没有 EOS parity 与灰度证据的情况下把 `MafAgentEngine` 宣传成生产可用。
+- 已完成：契约、`ToolRegistry`、`TurnPipeline`、MAF 适配骨架、SSE 端点、测试替身、console sample；P0 spike（MAF 1.25 + `deepseek-flash` + 3 工具）10/10；失败事件、`max_tool_rounds`、Claims 身份组装与 `TurnPipeline` 接线；`IChatModel` 录制/回放 harness + 50 条构造 transcript 回放；工具 Schema 逐字快照与越权/泄露用例；SSE 失败端到端与适配器 reasoning/usage/取消/异常契约；`IConversationStore.IsOwnedByAsync` 会话归属校验与 403；`MafAgentEngineOptions` 只读 allowlist、DI 默认只读、并发默认 false、IConfiguration 绑定、空正文重试；P2 100 次真实基线（文本 p50 749 / 工具 1717 ms，整体 p95 2081 ms）；宿主缝（`ToolResult.Digest`、非法参数原文保留、`TerminateOnUnknownCalls`）；EOS 已把 `MafAgentEngine` 作为唯一引擎接入，旧自研循环退役；`build` 0 警告 0 错误，`test` 106/106。
+- 未完成：写路径的宿主侧运行数据（EOS 侧已接入写工具）、抽包、第二宿主、工作流。进程内录制由宿主承担（EOS 的 `AssistantTranscriptRecorder`）。
+- 50 条回放是构造场景，不是真机录制；P0 是独立 spike。跨引擎 parity 对拍已退役——旧引擎删掉后没有第二个比较对象。
+- **不要**把本库说成"已有多宿主验证"：目前只有 EOS 一个宿主接入，抽包与第二宿主未开始。
 
 ## 7. 代码约定
 
@@ -83,8 +80,8 @@ dotnet run --project samples\Agent.Harness.Sample.Console\Agent.Harness.Sample.C
 
 ## 9. 下一步优先事项
 
-1. **P1 parity**：回放 harness 与 50 条构造 transcript 已落；下一步把 EOS 的 `LegacyTurnEngine` 和真实录制接进来，做旧/新引擎对比。
-2. **P2 读路径**：100 次基线与空正文重试已落；扩到 500 次、接供应商价格、统计重试率，并补灰度回滚演练。
-3. 通过 G1/G2 决策门后，再动写路径。
+1. **守住调用身份链**：EOS 把写入类工具接到同一引擎后，服务端幂等键只从 `ToolInvocation.CallId` 推导；引擎侧不得让同一 CallId 对应两次执行，也不得丢 CallId。
+2. **P4 抽包与第二宿主**：第二个宿主出现再抽包，接入目标 <150 行；没有第二宿主前不改包边界。
+3. **P5 MAF Workflows 试点**：端到端跑通 + 人工确认可审计，不引入新基础设施。
 
 细节见 [docs/roadmap.md](docs/roadmap.md) 与 [docs/blueprint.md](docs/blueprint.md)。

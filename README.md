@@ -2,7 +2,7 @@
 
 > 企业管理系统里的**受控 Agent 运行时**：把模型、工具、权限、预算、审计和写入管线装进一个可复用的壳。
 >
-> 状态：`0.1.0` 骨架 · `dotnet build` 0 警告 0 错误 · `dotnet test` 118/118 通过 · P0 spike 10/10（`deepseek-flash`） · P1 回放基线 50/50 + 旧/新引擎对比工具
+> 状态：`0.1.0` 骨架 · `dotnet build` 0 警告 0 错误 · `dotnet test` 106/106 通过 · P0 spike 10/10（`deepseek-flash`） · 回放基线 50/50 · EOS 已作为唯一引擎接入
 
 ---
 
@@ -95,24 +95,23 @@ MAF 核心 / 现有模型供应商 / 宿主工具
 |---|---|---|
 | `Agent.Harness.Abstractions` | 回合、事件、工具、治理、会话、模型契约 | ✅ 可编译 |
 | `Agent.Harness.Core` | `ToolRegistry`、`TurnPipeline`、DI 扩展 | ✅ 可编译 |
-| `Agent.Harness.Maf` | `ChatModelChatClient`、`JsonSchemaAIFunction`、`MafAgentEngine` | ✅ 可编译；P0 spike 10/10（`deepseek-flash`）；⚠️ 未做 EOS parity/灰度 |
+| `Agent.Harness.Maf` | `ChatModelChatClient`、`JsonSchemaAIFunction`、`MafAgentEngine` | ✅ 可编译；P0 spike 10/10（`deepseek-flash`）；EOS 已作为唯一引擎接入 |
 | `Agent.Harness.AspNetCore` | `MapAgentHarness` SSE 端点、Claims 组装、`TurnPipeline` 接线 | ✅ 最小安全实现 |
 | `Agent.Harness.Testing` | `FakeChatModel`、内存预算/审计、`EchoAgentEngine`、录制/回放 | ✅ 可编译 |
-| `tests/Agent.Harness.Tests` | 工具注册表、回合管线、Fake 模型、MAF 适配、端点组装、Schema 快照、越权、会话归属、SSE 失败、50 条回放、读路径选项、parity 判定口径、收尾轮说明 | ✅ 118/118 |
+| `tests/Agent.Harness.Tests` | 工具注册表、回合管线、Fake 模型、MAF 适配、端点组装、Schema 快照、越权、会话归属、SSE 失败、50 条回放、读路径选项、收尾轮说明 | ✅ 106/106 |
 | `samples/Agent.Harness.Sample.Console` | 无模型依赖的回显示例 | ✅ 可运行 |
-| `tools/Agent.Harness.Parity` | 旧/新引擎跨仓对比（归一化结果 + 三档判定，不打包） | ✅ 2 条构造用例 PASS |
 | `spikes/Agent.Harness.Spike` | P0：MAF + DeepSeek + 3 工具；P2：100 次读路径基线（不打包） | ✅ 10/10；文本 p50 749 / 工具 1717 ms |
 
 已实测：
 
 ```text
 dotnet build Agent.Harness.slnx   → 0 警告 0 错误
-dotnet test                        → 118/118 通过
+dotnet test                        → 106/106 通过
 dotnet run --project samples/...   → delta + done
 dotnet run --project spikes/...    → P0 10/10（需 DEEPSEEK_APP_KEY）
 ```
 
-> ⚠️ P0 spike 已在 `deepseek-flash` 上通过 10/10，覆盖单/多工具、多轮、usage、取消、错误映射与最大轮次；但它只是独立 spike 的读路径验证，不是 EOS parity、不是灰度、更不是生产可用。`AgentEvent.Failed` 与最大轮次的宿主语义仍待 P1。
+> ⚠️ P0 spike 已在 `deepseek-flash` 上通过 10/10，覆盖单/多工具、多轮、usage、取消、错误映射与最大轮次；它只是独立 spike 的读路径验证。EOS 已把 `MafAgentEngine` 作为唯一引擎接入（权限、写管线、预算、审计仍在宿主机），第二个宿主接入与抽包未开始。
 
 ---
 
@@ -170,7 +169,6 @@ Agent Harness/
 │  ├─ Agent.Harness.AspNetCore/   # SSE 端点
 │  └─ Agent.Harness.Testing/      # 测试替身 + 录制/回放
 ├─ tests/Agent.Harness.Tests/
-├─ tools/Agent.Harness.Parity/       # 旧/新引擎跨仓对比（不打包）
 ├─ samples/Agent.Harness.Sample.Console/
 ├─ spikes/Agent.Harness.Spike/      # P0：MAF + DeepSeek 验证（不打包）
 └─ docs/
@@ -355,9 +353,9 @@ app.MapAgentHarness("/api/agent/chat")
 | 阶段 | 内容 | 状态 |
 |---|---|---|
 | **P0** | 独立 spike：MAF 1.25 + DeepSeek + 3 工具，10 条用例 | ✅ 10/10（2026-10-23；见 [报告](docs/spikes/p0-spike-report.md)） |
-| **P1** | 契约稳定 + 录制回放 + parity 基线 | 🟡 回放基线 50/50；EOS 旧引擎对比未做 |
-| **P2** | MAF 读路径灰度（只读工具） | 🟡 P0 已验证；读路径 parity 未做 |
-| **P3** | 写路径接入 + 默认切换 + 回滚 | ⬜ 未开始 |
+| **P1** | 契约稳定 + 录制回放 + 引擎对比 | ✅ 回放基线 50/50；EOS 旧引擎对比已完成（合成 2 + 真实重建 10，全 PASS），随后旧引擎退役、对拍工具一并退役 |
+| **P2** | MAF 读路径灰度（只读工具） | ✅ EOS 已切为唯一引擎；只读过滤期演练里写意图降级为说明、不执行 |
+| **P3** | 写路径接入 + 默认切换 + 回滚 | 🟡 EOS 写工具已接同一引擎，幂等键来自引擎 `CallId`；运行数据待积累 |
 | **P4** | 抽包 + 第二宿主验证 | ⬜ 未开始 |
 | **P5** | MAF Workflows 试点（确定性多步 + 人工确认） | ⬜ 未开始 |
 
@@ -393,11 +391,11 @@ dotnet test tests\Agent.Harness.Tests\Agent.Harness.Tests.csproj
 
 下一步要补：
 
-- 把 EOS 的 `LegacyTurnEngine` 与真实 transcript 接进来，做旧/新引擎对比（当前 50 条是构造场景，不是 EOS 真机录制）；
-- P2 灰度：回滚演练、线上抽样；baseline 扩到 500 并接供应商价格；统计空正文重试率；
+- 宿主侧写路径的运行数据（EOS 已接入写工具，幂等键只从引擎 `CallId` 推导）；
+- baseline 扩到 500 并接供应商价格；统计空正文重试率；
 - HTTP 线路上 Schema 仍是语义等价（JSON 序列化会规范化空白/顺序），`IChatModel` 边界才是逐字快照。
 
-**不要用真实模型做 parity**：同一 prompt 两次输出不同，无法判定是引擎差异还是模型抖动。
+**引擎对比不要用真实模型**：同一 prompt 两次输出不同，分不清是引擎差异还是模型抖动；回归用录制回放。
 
 ---
 

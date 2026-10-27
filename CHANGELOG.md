@@ -2,6 +2,19 @@
 
 本文件记录各版本的**能力变化**。版本号即 `Directory.Build.props` 的 `<Version>`，与 git 标签 `vX.Y.Z` 一致。
 
+## 未发布
+
+### 宿主缝
+
+- `ToolResult.Digest`：工具结果写入审计/诊断用的摘要由工具自己给，不再由引擎按文本截断——截断正文既不保真也不可控。
+- `ChatModelChatClient` 保留非法参数原文（`$harness.invalid_arguments`），由宿主决定是拒绝该次调用还是回喂模型纠正；解析不再吞掉原文。
+- `MafAgentEngineOptions.TerminateOnUnknownCalls`（默认 `false`）：未知工具默认以 `Ok=false` 回喂模型继续，与 MAF 的默认一致；需要直接终止时显式打开。
+
+### 退役
+
+- 跨引擎 parity 对拍退役：`tools/Agent.Harness.Parity`、`ParityCase`、`TurnOutcome` / `TurnOutcomeComparer`、`SequenceChatModel` 及对应用例删除。它比的是"旧引擎 vs 新引擎"，EOS 旧引擎删除后没有比较对象。
+- 回放（`RecordingChatModel` / `ReplayChatModel` / `TurnRun` / `TurnRunComparer` + 50 条构造 transcript）保留：它是单引擎回归，与对拍无关。
+
 ## 0.1.0 — 2026-10-26
 
 首个公开版本：受控 Agent 运行时的骨架 + 引擎适配 + 跨引擎 parity 工具。
